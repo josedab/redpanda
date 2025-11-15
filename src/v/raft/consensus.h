@@ -36,6 +36,7 @@
 #include "raft/replicate_batcher.h"
 #include "raft/replication_monitor.h"
 #include "raft/state_machine_manager.h"
+#include "raft/parallel/parallel_replication_pipeline.h"
 #include "raft/timeout_jitter.h"
 #include "raft/transfer_leadership.h"
 #include "raft/types.h"
@@ -637,6 +638,12 @@ private:
     replicate_stages
       do_replicate(chunked_vector<model::record_batch>, replicate_options);
 
+    // Parallel replication path
+    ss::future<std::vector<result<replicate_result>>>
+      do_replicate_parallel(
+        std::vector<model::record_batch>,
+        replicate_options);
+
     ss::future<result<replicate_result>> chain_stages(replicate_stages);
 
     ss::future<storage::append_result> disk_append(
@@ -901,6 +908,7 @@ private:
     compaction_coordinator _compaction_coordinator;
 
     replicate_batcher _batcher;
+    std::unique_ptr<parallel::parallel_replication_pipeline> _parallel_pipeline;
     size_t _pending_flush_bytes{0};
     clock_type::time_point _last_flush_time;
     /// Ensures that we do not schedule multiple redudant flushes.

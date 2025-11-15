@@ -304,6 +304,11 @@ struct configuration final : public config_store {
     property<bool> raft_recovery_throttle_disable_dynamic_mode;
     property<std::optional<uint32_t>> raft_smp_max_non_local_requests;
     deprecated_property raft_max_concurrent_append_requests_per_follower;
+    property<bool> raft_parallel_replication_enabled;
+    bounded_property<size_t> raft_max_parallel_operations;
+    property<ss::sstring> raft_dependency_detection_mode;
+    property<bool> raft_speculation_enabled;
+    property<size_t> raft_parallel_batch_size_threshold;
     enum_property<model::write_caching_mode> write_caching_default;
 
     property<size_t> reclaim_min_size;

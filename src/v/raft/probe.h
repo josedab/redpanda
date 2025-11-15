@@ -68,6 +68,13 @@ public:
         ++_offset_translator_inconsistency_error;
     }
     void append_entries_buffer_flush() { ++_append_entries_buffer_flush; }
+
+    // Parallel replication metrics
+    void parallel_replication_request() { ++_parallel_replication_requests; }
+    void parallel_batch_group(size_t count) { _parallel_batch_groups += count; }
+    void sequential_fallback() { ++_sequential_fallbacks; }
+    void dependency_conflict() { ++_dependency_conflicts; }
+
     void clear() {
         _metrics.clear();
         _public_metrics.clear();
@@ -99,6 +106,11 @@ private:
     uint64_t _offset_translator_inconsistency_error = 0;
     uint64_t _append_entries_buffer_flush = 0;
     uint32_t _recovery_resets = 0;
+    // Parallel replication metrics
+    uint64_t _parallel_replication_requests = 0;
+    uint64_t _parallel_batch_groups = 0;
+    uint64_t _sequential_fallbacks = 0;
+    uint64_t _dependency_conflicts = 0;
     metrics::internal_metric_groups _metrics;
     metrics::public_metric_groups _public_metrics;
 };

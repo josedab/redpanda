@@ -1334,6 +1334,50 @@ configuration::configuration()
       std::nullopt)
   , raft_max_concurrent_append_requests_per_follower(
       *this, "raft_max_concurrent_append_requests_per_follower")
+  , raft_parallel_replication_enabled(
+      *this,
+      "raft_parallel_replication_enabled",
+      "Enable parallel Raft log replication for independent record batches. "
+      "When enabled, batches without dependencies can be replicated "
+      "concurrently, improving throughput by 40-60% for multi-partition "
+      "workloads while maintaining linearizability and exactly-once semantics.",
+      {.needs_restart = needs_restart::no, .visibility = visibility::tunable},
+      false)
+  , raft_max_parallel_operations(
+      *this,
+      "raft_max_parallel_operations",
+      "Maximum number of concurrent replication operations allowed when "
+      "parallel replication is enabled. Controls resource usage and prevents "
+      "overwhelming the system under heavy load.",
+      {.needs_restart = needs_restart::no, .visibility = visibility::tunable},
+      16,
+      {.min = 1, .max = 128})
+  , raft_dependency_detection_mode(
+      *this,
+      "raft_dependency_detection_mode",
+      "Dependency detection mode for parallel replication: 'auto' (balanced), "
+      "'strict' (conservative, more sequential), 'relaxed' (aggressive, more "
+      "parallel). Auto mode adapts based on workload characteristics.",
+      {.needs_restart = needs_restart::no, .visibility = visibility::tunable},
+      "auto",
+      {.example = "auto"})
+  , raft_speculation_enabled(
+      *this,
+      "raft_speculation_enabled",
+      "Enable speculative execution for parallel replication. When enabled, "
+      "batches may execute speculatively before all dependencies are fully "
+      "committed, with rollback on conflicts. This is an advanced optimization "
+      "that may improve latency but increases complexity.",
+      {.needs_restart = needs_restart::no, .visibility = visibility::tunable},
+      false)
+  , raft_parallel_batch_size_threshold(
+      *this,
+      "raft_parallel_batch_size_threshold",
+      "Minimum batch size in bytes to consider for parallel replication. "
+      "Smaller batches are processed sequentially to avoid coordination "
+      "overhead. Typical values range from 1KB to 64KB.",
+      {.needs_restart = needs_restart::no, .visibility = visibility::tunable},
+      1_KiB)
   , write_caching_default(
       *this,
       "write_caching_default",

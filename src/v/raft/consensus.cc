@@ -140,6 +140,7 @@ consensus::consensus(
       _as,
       _bg)
   , _batcher(this, config::shard_local_cfg().raft_replicate_batch_window_size())
+  , _parallel_pipeline(nullptr)  // Will be initialized in constructor body
   , _event_manager(this)
   , _probe(std::make_unique<probe>())
   , _replicate_append_timeout(
@@ -163,6 +164,27 @@ consensus::consensus(
   , _max_pending_flush_bytes(log_config().flush_bytes())
   , _max_flush_delay(compute_max_flush_delay())
   , _replication_monitor(this) {
+    // Initialize parallel replication pipeline if enabled
+    if (config::shard_local_cfg().raft_parallel_replication_enabled()) {
+        auto detection_mode_str = config::shard_local_cfg().raft_dependency_detection_mode();
+        parallel::dependency_graph::detection_mode mode = parallel::dependency_graph::detection_mode::auto_mode;
+
+        if (detection_mode_str == "strict") {
+            mode = parallel::dependency_graph::detection_mode::strict;
+        } else if (detection_mode_str == "relaxed") {
+            mode = parallel::dependency_graph::detection_mode::relaxed;
+        }
+
+        parallel::parallel_replication_pipeline::config cfg{
+            .max_parallel_operations = config::shard_local_cfg().raft_max_parallel_operations(),
+            .detection_mode = mode,
+            .speculation_enabled = config::shard_local_cfg().raft_speculation_enabled(),
+            .batch_size_threshold = config::shard_local_cfg().raft_parallel_batch_size_threshold(),
+        };
+
+        _parallel_pipeline = std::make_unique<parallel::parallel_replication_pipeline>(cfg);
+    }
+
     setup_metrics();
     setup_public_metrics();
     update_follower_states(_configuration_manager.get_latest());
@@ -896,6 +918,47 @@ replicate_stages consensus::do_replicate(
 
     return wrap_stages_with_gate(
       _bg, _batcher.replicate(std::move(batches), opts));
+}
+
+ss::future<std::vector<result<replicate_result>>>
+consensus::do_replicate_parallel(
+  std::vector<model::record_batch> batches, replicate_options opts) {
+    // This method provides parallel replication for independent batches
+    // using the parallel replication pipeline
+
+    if (!_parallel_pipeline) {
+        // Parallel replication not enabled - fall back to sequential
+        std::vector<result<replicate_result>> results;
+        results.reserve(batches.size());
+
+        for (auto& batch : batches) {
+            chunked_vector<model::record_batch> single_batch;
+            single_batch.push_back(std::move(batch));
+            auto stages = do_replicate(std::move(single_batch), opts);
+            auto result = co_await chain_stages(std::move(stages));
+            results.push_back(result);
+        }
+
+        co_return results;
+    }
+
+    // Use parallel replication pipeline
+    // Create a replicator function that delegates to the sequential path
+    parallel::replicate_fn replicator = [this, opts](
+      model::record_batch batch,
+      replicate_options batch_opts) -> ss::future<result<replicate_result>> {
+        chunked_vector<model::record_batch> single_batch;
+        single_batch.push_back(std::move(batch));
+        auto stages = this->do_replicate(std::move(single_batch), batch_opts);
+        return this->chain_stages(std::move(stages));
+    };
+
+    // Update the pipeline's current term
+    _parallel_pipeline->set_current_term(_term);
+
+    // Execute parallel replication
+    co_return co_await _parallel_pipeline->replicate_parallel(
+      std::move(batches), opts, std::move(replicator));
 }
 
 ss::future<model::record_batch_reader>

@@ -181,6 +181,33 @@ void probe::setup_metrics(const model::ntp& ntp) {
             "Number of times that a learner was forcefully reset "
             "during recovery due to potential divergence"),
           labels),
+        sm::make_counter(
+          "parallel_replication_requests",
+          [this] { return _parallel_replication_requests; },
+          sm::description(
+            "Number of replicate requests that used parallel replication"),
+          labels),
+        sm::make_counter(
+          "parallel_batch_groups",
+          [this] { return _parallel_batch_groups; },
+          sm::description(
+            "Number of parallel batch groups processed (indicates level "
+            "of parallelism achieved)"),
+          labels),
+        sm::make_counter(
+          "sequential_fallbacks",
+          [this] { return _sequential_fallbacks; },
+          sm::description(
+            "Number of times parallel replication fell back to sequential "
+            "processing"),
+          labels),
+        sm::make_counter(
+          "dependency_conflicts",
+          [this] { return _dependency_conflicts; },
+          sm::description(
+            "Number of dependency conflicts detected during parallel "
+            "replication"),
+          labels),
       },
       {},
       {sm::shard_label, sm::label("partition")});
