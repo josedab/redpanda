@@ -520,6 +520,24 @@ operator<<(std::ostream& os, cloud_storage_chunk_eviction_strategy st) {
     }
 }
 
+enum class cloud_storage_prefetch_mode {
+    off = 0,
+    sequential = 1,
+    adaptive = 2,
+};
+
+inline std::ostream&
+operator<<(std::ostream& os, cloud_storage_prefetch_mode mode) {
+    switch (mode) {
+    case cloud_storage_prefetch_mode::off:
+        return os << "off";
+    case cloud_storage_prefetch_mode::sequential:
+        return os << "sequential";
+    case cloud_storage_prefetch_mode::adaptive:
+        return os << "adaptive";
+    }
+}
+
 enum class fetch_read_strategy : uint8_t {
     polling = 0,
     non_polling = 1,

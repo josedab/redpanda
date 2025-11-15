@@ -571,6 +571,18 @@ struct configuration final : public config_store {
     bounded_property<std::optional<double>, numeric_bounds>
       cloud_storage_cache_trim_threshold_percent_objects;
 
+    // Intelligent prefetching
+    property<bool> cloud_storage_prefetch_enabled;
+    enum_property<model::cloud_storage_prefetch_mode>
+      cloud_storage_prefetch_mode;
+    property<uint32_t> cloud_storage_prefetch_depth;
+    property<uint64_t> cloud_storage_prefetch_memory_budget;
+    property<uint32_t> cloud_storage_prefetch_max_concurrent;
+    property<uint32_t> cloud_storage_pattern_detection_min_samples;
+    property<uint32_t> cloud_storage_markov_chain_order;
+    bounded_property<double, numeric_bounds>
+      cloud_storage_confidence_threshold;
+
     property<bool> cloud_storage_inventory_based_scrub_enabled;
     property<ss::sstring> cloud_storage_inventory_id;
     property<ss::sstring> cloud_storage_inventory_reports_prefix;

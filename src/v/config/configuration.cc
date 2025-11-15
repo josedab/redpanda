@@ -3139,6 +3139,70 @@ configuration::configuration()
       {.needs_restart = needs_restart::no, .visibility = visibility::tunable},
       std::nullopt,
       {.min = 1.0, .max = 100.0})
+  , cloud_storage_prefetch_enabled(
+      *this,
+      "cloud_storage_prefetch_enabled",
+      "Enable intelligent prefetching for tiered storage reads. When enabled, "
+      "Redpanda will analyze access patterns and proactively fetch segments "
+      "from cloud storage to reduce cold read latency.",
+      {.needs_restart = needs_restart::no, .visibility = visibility::tunable},
+      true)
+  , cloud_storage_prefetch_mode(
+      *this,
+      "cloud_storage_prefetch_mode",
+      "Prefetching mode: off (disabled), sequential (simple forward "
+      "prefetching), or adaptive (ML-based pattern recognition).",
+      {.needs_restart = needs_restart::no,
+       .example = "adaptive",
+       .visibility = visibility::tunable},
+      model::cloud_storage_prefetch_mode::adaptive,
+      {model::cloud_storage_prefetch_mode::off,
+       model::cloud_storage_prefetch_mode::sequential,
+       model::cloud_storage_prefetch_mode::adaptive})
+  , cloud_storage_prefetch_depth(
+      *this,
+      "cloud_storage_prefetch_depth",
+      "Number of segments to prefetch ahead. Higher values increase cache hit "
+      "rate but consume more memory.",
+      {.needs_restart = needs_restart::no, .visibility = visibility::tunable},
+      4)
+  , cloud_storage_prefetch_memory_budget(
+      *this,
+      "cloud_storage_prefetch_memory_budget",
+      "Maximum memory budget for prefetched segments in bytes. Limits the "
+      "total amount of memory used for speculative prefetching.",
+      {.needs_restart = needs_restart::no, .visibility = visibility::tunable},
+      1_GiB)
+  , cloud_storage_prefetch_max_concurrent(
+      *this,
+      "cloud_storage_prefetch_max_concurrent",
+      "Maximum number of concurrent prefetch operations. Controls the maximum "
+      "number of segments that can be prefetched simultaneously.",
+      {.needs_restart = needs_restart::no, .visibility = visibility::tunable},
+      8)
+  , cloud_storage_pattern_detection_min_samples(
+      *this,
+      "cloud_storage_pattern_detection_min_samples",
+      "Minimum number of access samples required before attempting pattern "
+      "detection. Lower values enable faster pattern recognition but may be "
+      "less accurate.",
+      {.needs_restart = needs_restart::no, .visibility = visibility::tunable},
+      10)
+  , cloud_storage_markov_chain_order(
+      *this,
+      "cloud_storage_markov_chain_order",
+      "Order of the Markov chain predictor used for adaptive prefetching. "
+      "Higher values consider more historical context but use more memory.",
+      {.needs_restart = needs_restart::no, .visibility = visibility::tunable},
+      2)
+  , cloud_storage_confidence_threshold(
+      *this,
+      "cloud_storage_confidence_threshold",
+      "Minimum confidence threshold for prefetch predictions. Only predictions "
+      "above this threshold will trigger prefetch operations. Range: 0.0-1.0.",
+      {.needs_restart = needs_restart::no, .visibility = visibility::tunable},
+      0.7,
+      {.min = 0.0, .max = 1.0})
   , cloud_storage_inventory_based_scrub_enabled(
       *this,
       "cloud_storage_inventory_based_scrub_enabled",

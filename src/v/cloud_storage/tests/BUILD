@@ -726,3 +726,19 @@ redpanda_cc_btest(
         "@seastar//:testing",
     ],
 )
+
+redpanda_cc_btest(
+    name = "prefetch_test",
+    timeout = "short",
+    srcs = [
+        "prefetch_test.cc",
+    ],
+    deps = [
+        "//src/v/cloud_storage",
+        "//src/v/model",
+        "//src/v/test_utils:seastar_boost",
+        "@boost//:test",
+        "@seastar",
+        "@seastar//:testing",
+    ],
+)
