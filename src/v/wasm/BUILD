@@ -277,3 +277,89 @@ redpanda_cc_library(
         "@seastar",
     ],
 )
+
+# Enhanced performance components
+
+redpanda_cc_library(
+    name = "simd_runtime",
+    srcs = [
+        "simd_runtime.cc",
+    ],
+    hdrs = [
+        "simd_runtime.h",
+    ],
+    deps = [
+        ":api",
+        ":wasmtime",
+        "//src/v/base",
+        "//src/v/model",
+        "@seastar",
+    ],
+)
+
+redpanda_cc_library(
+    name = "aot_compiler",
+    srcs = [
+        "aot_compiler.cc",
+    ],
+    hdrs = [
+        "aot_compiler.h",
+    ],
+    deps = [
+        "//src/v/base",
+        "//src/v/bytes:iobuf",
+        "//src/v/hashing:xx",
+        "//src/v/model",
+        "@abseil-cpp//absl/container:flat_hash_map",
+        "@seastar",
+    ],
+)
+
+redpanda_cc_library(
+    name = "shared_memory_allocator",
+    srcs = [
+        "shared_memory_allocator.cc",
+    ],
+    hdrs = [
+        "shared_memory_allocator.h",
+    ],
+    deps = [
+        "//src/v/base",
+        "@abseil-cpp//absl/container:flat_hash_map",
+        "@seastar",
+    ],
+)
+
+redpanda_cc_library(
+    name = "jit_tiering",
+    srcs = [
+        "jit_tiering.cc",
+    ],
+    hdrs = [
+        "jit_tiering.h",
+    ],
+    deps = [
+        ":aot_compiler",
+        "//src/v/base",
+        "@abseil-cpp//absl/container:flat_hash_map",
+        "@seastar",
+    ],
+)
+
+redpanda_cc_library(
+    name = "instance_pool",
+    srcs = [
+        "instance_pool.cc",
+    ],
+    hdrs = [
+        "instance_pool.h",
+    ],
+    deps = [
+        "//src/v/base",
+        "//src/v/bytes:iobuf",
+        "//src/v/hashing:xx",
+        "//src/v/model",
+        "@abseil-cpp//absl/container:flat_hash_map",
+        "@seastar",
+    ],
+)

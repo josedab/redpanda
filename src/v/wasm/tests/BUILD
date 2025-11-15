@@ -239,6 +239,27 @@ redpanda_cc_gtest(
     ],
 )
 
+redpanda_cc_gtest(
+    name = "wasm_enhanced_performance_test",
+    timeout = "moderate",
+    srcs = [
+        "wasm_enhanced_performance_test.cc",
+    ],
+    cpu = 1,
+    memory = "128MiB",
+    deps = [
+        "//src/v/base",
+        "//src/v/test_utils:gtest",
+        "//src/v/wasm:aot_compiler",
+        "//src/v/wasm:instance_pool",
+        "//src/v/wasm:jit_tiering",
+        "//src/v/wasm:shared_memory_allocator",
+        "//src/v/wasm:simd_runtime",
+        "@googletest//:gtest",
+        "@seastar",
+    ],
+)
+
 redpanda_cc_bench(
     name = "wasm_transform_rpbench",
     timeout = "long",

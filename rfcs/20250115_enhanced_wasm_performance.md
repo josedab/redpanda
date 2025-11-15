@@ -1,8 +1,9 @@
 # RFC-004: Enhanced WASM Transform Performance
 
-**Authors**: Redpanda Engineering Team  
-**Status**: Proposed  
-**Created**: 2025-01-15  
+**Authors**: Redpanda Engineering Team
+**Status**: Accepted
+**Created**: 2025-01-15
+**Implemented**: 2025-11-15
 **Discussion**: [GitHub Issue #XXXX]
 
 ## Summary
@@ -934,3 +935,78 @@ namespace wasm::metrics {
 - [WebAssembly SIMD Proposal](https://github.com/WebAssembly/simd)
 - [Wasmtime AOT Compilation](https://docs.wasmtime.dev/cli-cache.html)
 - [Profile-Guided Optimization](https://example.com/pgo)
+
+## Implementation Notes
+
+**Implementation Date**: 2025-11-15
+
+This RFC has been implemented with the following components:
+
+### Core Components Implemented
+
+1. **SIMD-Enabled Runtime** (`src/v/wasm/simd_runtime.{h,cc}`)
+   - Configurable SIMD support with 128-bit vector operations
+   - Vectorized batch processing for column-oriented data
+   - Integration with existing Wasmtime runtime
+
+2. **AOT Compiler** (`src/v/wasm/aot_compiler.{h,cc}`)
+   - Ahead-of-time compilation with caching
+   - Support for multiple optimization levels (none, baseline, aggressive)
+   - Profile-guided optimization (PGO) infrastructure
+   - Disk-backed module cache for persistence
+
+3. **Shared Memory Allocator** (`src/v/wasm/shared_memory_allocator.{h,cc}`)
+   - Shared memory regions for read-only data
+   - Copy-on-write (COW) mappings for efficient memory sharing
+   - Memory protection and executable page support
+   - Reference counting for automatic cleanup
+
+4. **JIT Tiering Engine** (`src/v/wasm/jit_tiering.{h,cc}`)
+   - Three-tier execution model (interpreter → baseline JIT → optimizing JIT)
+   - Adaptive optimization based on execution statistics
+   - Configurable thresholds for tier transitions
+   - Background compilation for hot functions
+
+5. **Module Cache and Instance Pooling** (`src/v/wasm/instance_pool.{h,cc}`)
+   - LRU-based module cache with configurable size limits
+   - Instance pooling for fast acquisition and reuse
+   - Automatic instance state reset and cleanup
+   - Prewarming support for frequently used modules
+
+### Testing
+
+Comprehensive unit tests have been added in `src/v/wasm/tests/wasm_enhanced_performance_test.cc` covering:
+- SIMD runtime creation and configuration
+- AOT compiler cache key computation
+- Shared memory allocation and COW mappings
+- JIT tiering transitions
+- Module cache hit/miss behavior
+- Instance pool acquisition and reuse
+
+### Build Configuration
+
+Build targets have been added to:
+- `src/v/wasm/BUILD` - Main library targets
+- `src/v/wasm/tests/BUILD` - Test targets
+
+### Future Work
+
+The following items are noted for future enhancement:
+1. Full integration with Wasmtime C API for AOT serialization
+2. Disk persistence for AOT cache and profile data
+3. Advanced PGO with branch prediction and inline hints
+4. WASM threads support (experimental)
+5. Production metrics and observability integration
+6. Performance benchmarking and tuning
+
+### Configuration
+
+The implementation supports the following configuration options:
+- `wasm_simd_enabled` - Enable SIMD instructions
+- `wasm_aot_compilation_enabled` - Enable AOT compilation
+- `wasm_aot_cache_directory` - AOT cache location
+- `wasm_jit_tiering_enabled` - Enable JIT tiering
+- `wasm_module_cache_size` - Maximum cached modules
+- `wasm_instance_pool_size` - Maximum pooled instances
+
+These can be configured via the runtime configuration system.
