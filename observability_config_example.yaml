@@ -1,0 +1,46 @@
+# Enhanced Observability Configuration for Redpanda
+# See rfcs/20250115_enhanced_observability.md for details
+
+# Distributed Tracing Configuration
+observability_tracing_enabled: false
+observability_tracing_sampling_rate: 0.01  # 1% of requests
+observability_tracing_exporter: "otlp"     # Options: otlp, jaeger, zipkin
+observability_tracing_endpoint: "http://localhost:4317"
+
+# Enhanced Metrics Configuration
+observability_metrics_partition_level: true
+observability_metrics_client_attribution: true
+observability_metrics_cost_tracking: false  # Higher overhead, enable if needed
+observability_metrics_export_interval: 10s
+
+# Live Profiling Configuration
+observability_profiling_enabled: false
+observability_profiling_cpu_enabled: true
+observability_profiling_memory_enabled: false  # Higher overhead
+observability_profiling_sampling_interval: 10ms
+
+# Structured Logging Configuration
+observability_logging_structured: false
+observability_logging_query_enabled: false
+observability_logging_retention_days: 7
+observability_logging_index_size_mb: 1024
+
+# Usage Examples:
+#
+# 1. Enable distributed tracing for production debugging:
+#    observability_tracing_enabled: true
+#    observability_tracing_sampling_rate: 0.01  # Sample 1% of requests
+#
+# 2. Enable detailed partition metrics:
+#    observability_metrics_partition_level: true
+#
+# 3. Enable client attribution for multi-tenant analysis:
+#    observability_metrics_client_attribution: true
+#
+# 4. Enable CPU profiling for performance analysis:
+#    observability_profiling_enabled: true
+#    observability_profiling_cpu_enabled: true
+#
+# 5. Enable structured logging with JSON output:
+#    observability_logging_structured: true
+#    observability_logging_query_enabled: true
