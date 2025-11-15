@@ -1,0 +1,116 @@
+# SQL Engine Configuration Schema
+# This file documents the configuration options for the Redpanda SQL query engine
+
+sql:
+  # Enable SQL query engine
+  enabled: true
+  type: boolean
+  description: "Enable the SQL query engine for streaming analytics"
+
+  # Parser settings
+  parser:
+    max_query_length: 1048576  # 1MB
+    type: integer
+    description: "Maximum length of SQL query in bytes"
+
+    timeout_ms: 5000
+    type: integer
+    description: "Parser timeout in milliseconds"
+
+  # Planner settings
+  planner:
+    enable_cost_based_optimization: true
+    type: boolean
+    description: "Enable cost-based query optimization"
+
+    enable_rule_based_optimization: true
+    type: boolean
+    description: "Enable rule-based query optimization"
+
+    statistics_sample_rate: 0.01
+    type: float
+    description: "Sample rate for collecting statistics (0.0-1.0)"
+
+    join_reorder_threshold: 12
+    type: integer
+    description: "Maximum number of tables to consider for join reordering"
+
+  # Executor settings
+  executor:
+    max_memory_per_query: 1073741824  # 1GB
+    type: integer
+    description: "Maximum memory per query in bytes"
+
+    parallelism: auto
+    type: string|integer
+    description: "Number of parallel threads (auto or specific number)"
+
+    enable_compilation: true
+    type: boolean
+    description: "Enable JIT compilation of queries"
+
+    compilation_threshold: 100
+    type: integer
+    description: "Number of executions before compiling a query"
+
+    spill_to_disk: true
+    type: boolean
+    description: "Allow spilling intermediate results to disk"
+
+    spill_directory: "/var/lib/redpanda/sql/spill"
+    type: string
+    description: "Directory for spilling data to disk"
+
+  # Materialized views
+  materialized_views:
+    enabled: true
+    type: boolean
+    description: "Enable materialized views"
+
+    storage_directory: "/var/lib/redpanda/sql/views"
+    type: string
+    description: "Directory for storing materialized view data"
+
+    max_views: 1000
+    type: integer
+    description: "Maximum number of materialized views"
+
+    refresh_interval_ms: 5000
+    type: integer
+    description: "Default refresh interval for periodic views in milliseconds"
+
+    incremental_maintenance: true
+    type: boolean
+    description: "Enable incremental view maintenance"
+
+  # Performance tuning
+  performance:
+    enable_simd: true
+    type: boolean
+    description: "Enable SIMD optimizations for vectorized execution"
+
+    enable_adaptive_execution: true
+    type: boolean
+    description: "Enable adaptive query execution"
+
+    cache_size: 268435456  # 256MB
+    type: integer
+    description: "Query result cache size in bytes"
+
+    buffer_pool_size: 536870912  # 512MB
+    type: integer
+    description: "Buffer pool size for query execution in bytes"
+
+  # Security
+  security:
+    enable_row_level_security: true
+    type: boolean
+    description: "Enable row-level security for queries"
+
+    enable_column_level_security: true
+    type: boolean
+    description: "Enable column-level security for queries"
+
+    audit_queries: true
+    type: boolean
+    description: "Enable query auditing"
